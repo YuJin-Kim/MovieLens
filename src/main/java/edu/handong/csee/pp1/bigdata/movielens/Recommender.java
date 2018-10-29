@@ -46,10 +46,10 @@ public class Recommender
 		TreeMap<Integer, HashSet<Integer>> 
 		baskets = data.getBaskets() ;
 		/* Baskets : UserID -> Set<MovieId> */
-		
+
 		for (Integer user : baskets.keySet()) {
 			HashSet<Integer> aBasket = baskets.get(user) ;
-			
+
 			computeFreqItemsetsWithSize1(aBasket) ;
 			computeFreqItemsetsWithSize2(aBasket) ; // i.e. association rules with size 2
 			computeFreqItemsetsWithSize3(aBasket) ; // i.e., association rules with size 3
@@ -159,7 +159,6 @@ public class Recommender
 
 		// Compute support, confidence, or lift. Based on their threshold, decide how to predict. Return 1 when metrics are satisfied by threshold, otherwise 0.
 		// In the current implementation, we considered only confidence.
-		int evidence = 0;
 		for(Integer p : anItemset) {
 
 			// the number baskets for I
@@ -172,14 +171,14 @@ public class Recommender
 			Integer numBasketsForIUnionj = freqItemsetsWithSize2.get(new FrequentItemsetSize2(p, j));
 			if(numBasketsForIUnionj == null)
 				continue;
-			
+
 			// compute confidence: The confidence of the rule I -> j is the ratio of the number of baskets for I U {j} and the number of baskets for I.
 			double confidence = (double) numBasketsForIUnionj / numBasketsForI;
 
 			if (confidence >= confidence_threshold_rulesize_2)
-				evidence++ ;
+				return 1;
 		}
-		
+
 		return 0 ;
 	}
 
@@ -274,46 +273,43 @@ class FrequentItemsetSize3 implements Comparable
 	FrequentItemsetSize3(Set<Integer> s) {
 		/* TODO: implement this method */
 		Integer [] elements = s.toArray(new Integer[3]) ;
-		int first, second, third;
+		items = new int[3];
 
 		// values in s must be sorted and save into items array
 		if(elements[0] <= elements[1] && elements[0] <= elements[2]) {
-			first = elements[0];
+			items[0] = elements[0];
 			if(elements[1] <= elements[2]) {
-				second = elements[1];
-				third = elements[2];
+				items[1] = elements[1];
+				items[2] = elements[2];
 			}
 			else {
-				second = elements[2];
-				third = elements[1];
+				items[1] = elements[2];
+				items[2] = elements[1];
 			}
 		}
 		else if(elements[1] <= elements[0] && elements[1] <= elements[2]) {
-			first = elements[1];
+			items[0] = elements[1];
 			if(elements[0] <= elements[2]) {
-				second = elements[0];
-				third = elements[2];
+				items[1] = elements[0];
+				items[2] = elements[2];
 			}
 			else {
-				second = elements[2];
-				third = elements[0];
+				items[1] = elements[2];
+				items[2] = elements[0];
 			}
 		}
 		else {
-			first = elements[2];
+			items[0] = elements[2];
 			if(elements[0] <= elements[1]) {
-				second = elements[0];
-				third = elements[1];
+				items[1] = elements[0];
+				items[2] = elements[1];
 			}
 			else {
-				second = elements[1];
-				third = elements[0];
+				items[1] = elements[1];
+				items[2] = elements[0];
 			}
 		}
 
-		items[0] = first;
-		items[1] = second;
-		items[2] = third;
 	}
 
 	@Override
