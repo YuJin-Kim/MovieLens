@@ -161,7 +161,7 @@ class Main
 			for (Integer q : q_negative.get(u))
 				confusionMatrix[0][rec.predict(u_movies, q)] += 1 ;
 		}
-
+		
 		if (confusionMatrix[0][1] + confusionMatrix[1][1] > 0)
 			if(INFO)
 				System.out.println("Precision: " +
