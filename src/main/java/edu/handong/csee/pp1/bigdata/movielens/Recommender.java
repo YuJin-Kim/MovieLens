@@ -1,8 +1,17 @@
 package edu.handong.csee.pp1.bigdata.movielens ;
 
-import java.util.* ;
-import com.google.common.collect.* ;
-import org.apache.commons.configuration.* ;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import org.apache.commons.configuration.PropertiesConfiguration;
+
+import com.google.common.collect.Sets;
 
 public class Recommender
 {
@@ -57,10 +66,10 @@ public class Recommender
 		}
 	}
 
-	public int predict(HashSet<Integer> anItemset, Integer q) {
-		if (predictPair(anItemset, q) == 1)
+	public int predict(HashSet<Integer> anItemset, Integer q, BufferedWriter bufferedWriter) throws IOException {
+		if (predictPair(anItemset, q, bufferedWriter) == 1)
 			return 1 ;
-		return predictTriple(anItemset, q) ;
+		return predictTriple(anItemset, q, bufferedWriter) ;
 	}
 
 	private void computeFreqItemsetsWithSize1(HashSet<Integer> aBasket) {
@@ -150,7 +159,7 @@ public class Recommender
 		}
 	}
 
-	private int predictPair(HashSet<Integer> anItemset, Integer j) {
+	private int predictPair(HashSet<Integer> anItemset, Integer j, BufferedWriter bufferedWriter) throws IOException {
 		/* TODO: implement this method */
 
 		// only consider the case whose itemset size is 1 since this method deals with {movie 1} -> {movie 2} rules
@@ -175,19 +184,22 @@ public class Recommender
 			// compute confidence: The confidence of the rule I -> j is the ratio of the number of baskets for I U {j} and the number of baskets for I.
 			double confidence = (double) numBasketsForIUnionj / numBasketsForI;
 
-			if (confidence >= confidence_threshold_rulesize_2)
-				return 1;
+			if(confidence >= confidence_threshold_rulesize_2)
+				bufferedWriter.write("{" + p + "} -> " + j + " | confidence: " + confidence + "\n");
+
+			//			if (confidence >= confidence_threshold_rulesize_2)
+			//				return 1;
 		}
 
 		return 0 ;
 	}
 
-	private int predictTriple(HashSet<Integer> anItemset, Integer j) { // association rule anItemset (I) -> j
+	private int predictTriple(HashSet<Integer> anItemset, Integer j, BufferedWriter bufferedWriter) throws IOException { // association rule anItemset (I) -> j
 
 		// only consider the case whose itemset size is >=2 since this method deals with {movie 1, movie 2} -> {movie 3} rules
 		if (anItemset.size() < 2)
 			return 0 ;
-
+		
 		// Compute support, confidence, or lift. Based on their threshold, decide how to predict. Return 1 when metrics are satisfied by thresholds, otherwise 0.
 		// In the current implementation, we considered only confidence.
 		int evidence = 0 ;
@@ -210,13 +222,20 @@ public class Recommender
 			// compute confidence: The confidence of the rule I -> j is the ratio of the number of baskets for I U {j} and the number of baskets for I.
 			double confidence = (double) numBasketsForIUnionj / numBasketsForI;
 
-			if (confidence >= confidence_threshold_rulesize_3) 
-				evidence++ ;
+			if(confidence >= confidence_threshold_rulesize_3) {
+				evidence++;
+				
+				if(confidence >= confidence_threshold_rulesize_2)
+					bufferedWriter.write("{" + p + "} -> " + j + " | confidence: " + confidence + "\n");
+			}
+
+			//			if (confidence >= confidence_threshold_rulesize_3) 
+			//				evidence++ ;
 		}
 
 		if (evidence >= min_evidence_3) 
 			return 1 ;
-
+		
 		return 0 ;
 	}	
 }
